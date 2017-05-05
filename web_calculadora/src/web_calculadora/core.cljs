@@ -8,18 +8,32 @@
 (defonce app-state (atom {}))
 (defonce moeda (atom {}))
 (defonce cache (atom {}))
+(defonce moedas (atom ["PES" "USD" "EUR"]))
+
 
 (defn input []
-  [:input {:type "text" :value (:reais @cache) :on-change #(swap! cache assoc :reais (-> % .-target .-value))}])
+  [:input {:type "text" 
+           :value (:reais @cache) 
+           :on-change #(swap! cache assoc :reais (-> % .-target .-value))}])
 
 (defn botao []
-  [:button {:on-click (fn [e] (swap! moeda assoc :reais (:reais @cache)))} (str "-->")])
+  [:button {:on-click (fn [e] (swap! moeda assoc :reais (:reais @cache)))} 
+   (str "-->")])
+
+(defn input-com-label [palavra]
+  [:label (str palavra) [input palavra]])
 
 (defn calculadora-window []  
   [:div 
    [input]
-   [botao]
-   (:reais @moeda)
+   [botao] 
+   [:div [:label "Preço de compra câmbio"]]
+   (for [moeda @moedas]
+     [:div [input-com-label (str moeda " = ")]]
+     )
+   [:div [:label "Preços na loja"]]
+   (for [moeda @moedas]
+     [:div [input-com-label (str moeda ": ")]])
    ])
 
 (r/render-component [calculadora-window]
@@ -30,7 +44,3 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 (defn on-js-reload []
   (println (str "APP-STATE:" @app-state)))
-
-
-  
-  
