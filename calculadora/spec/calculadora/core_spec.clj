@@ -10,6 +10,6 @@
     (let [r (incrementa 2)]
       (should= 3 r)))
 
-  (it "soma 3"
-    (let [r (incrementa 3)]
-      (should= 4 r))))
+  (it "soma 4"
+    (let [r (incrementa 4)]
+      (should= 5 r))))
