@@ -5,36 +5,30 @@
 (enable-console-print!)
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {}))
-(defonce moeda (atom {}))
-(defonce cache (atom {}))
-(defonce moedas (atom ["PES" "USD" "EUR"]))
-
-
-(defn input []
-  [:input {:type "text" 
-           :value (:reais @cache) 
-           :on-change #(swap! cache assoc :reais (-> % .-target .-value))}])
+(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0 :preco-loja 0} 
+                       :dolar {:nome "USD" :preco-cambio 1 :preco-loja 0}}))
 
 (defn botao []
-  [:button {:on-click (fn [e] (swap! moeda assoc :reais (:reais @cache)))} 
+  [:button {:on-click (fn [e] e)} 
    (str "-->")])
 
-(defn input-com-label [palavra]
-  [:label (str palavra) [input palavra]])
+(defn input-preco-cambio [seq-moeda]
+  (let [moeda (get seq-moeda 1)
+        chave (get seq-moeda 0)]
+    [:div
+     [:label "Preço pago por " (:nome moeda) " = R$ " ] 
+     [:input {:type "text" 
+              :value (:preco-cambio moeda)
+              :on-change #(swap! moedas assoc-in [chave :preco-cambio] (-> % .-target .-value))}]]))
 
 (defn calculadora-window []  
   [:div 
-   [input]
-   [botao] 
    [:div [:label "Preço de compra câmbio"]]
    (for [moeda @moedas]
-     [:div [input-com-label (str moeda " = ")]]
-     )
-   [:div [:label "Preços na loja"]]
+     [:div [input-preco-cambio moeda]])
+   [botao]
    (for [moeda @moedas]
-     [:div [input-com-label (str moeda ": ")]])
-   ])
+     [:div [:label "DEBUG " (str moeda)]])])
 
 (r/render-component [calculadora-window]
                           (. js/document (getElementById "app")))
@@ -43,4 +37,4 @@
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 (defn on-js-reload []
-  (println (str "APP-STATE:" @app-state)))
+  (println (str "@moedas = " @moedas)))
