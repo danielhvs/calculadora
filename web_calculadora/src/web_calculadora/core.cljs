@@ -6,7 +6,9 @@
 
 ;; define your app data so that it doesn't get over-written on reload
 (defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 0 :carteira 1000} 
-                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 75}}))
+                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 75}
+                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 35}}
+))
 
 (defn calcula-reais [moeda]
   (* (:carteira moeda) (:preco-cambio moeda)))
@@ -29,6 +31,13 @@
      [:label "Preço pago por " (:nome moeda) " = R$ " ]
      (input-valor seq-moeda chave)]))
 
+(defn input-preco-loja [seq-moeda chave]
+  (let [moeda (get seq-moeda 1)
+        chave-moeda (get seq-moeda 0)]
+    [:div
+     [:label "Produto custa " (:nome moeda) " "]
+     (input-valor seq-moeda chave)]))
+
 (defn input-carteira [seq-moeda chave]
   (let [moeda (get seq-moeda 1)
         chave-moeda (get seq-moeda 0)]
@@ -43,6 +52,9 @@
    [:div [:label "Quanto tem na carteira"]]
    (for [moeda @moedas]
      [:div [input-carteira moeda :carteira]])
+   [:div [:label "Quanto custa na loja"]]
+   (for [moeda @moedas]
+     [:div [input-preco-loja moeda :preco-loja]])
    [botao]
    (for [moeda @moedas]
      [:div [:label "DEBUG " (str moeda)]])])
