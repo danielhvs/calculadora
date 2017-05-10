@@ -5,27 +5,44 @@
 (enable-console-print!)
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0 :preco-loja 0} 
-                       :dolar {:nome "USD" :preco-cambio 1 :preco-loja 0}}))
+(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 0 :carteira 1000} 
+                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 75}}))
+
+(defn calcula-reais [moeda]
+  (* (:carteira moeda) (:preco-cambio moeda)))
 
 (defn botao []
   [:button {:on-click (fn [e] e)} 
    (str "-->")])
 
-(defn input-preco-cambio [seq-moeda]
+(defn input-valor [seq-moeda chave]
   (let [moeda (get seq-moeda 1)
-        chave (get seq-moeda 0)]
+        chave-moeda (get seq-moeda 0)]
+  [:input {:type "text" 
+           :value (chave moeda) 
+           :on-change #(swap! moedas assoc-in [chave-moeda chave] (-> % .-target .-value))}]))
+
+(defn input-preco-cambio [seq-moeda chave]
+  (let [moeda (get seq-moeda 1)
+        chave-moeda (get seq-moeda 0)]
     [:div
-     [:label "Preço pago por " (:nome moeda) " = R$ " ] 
-     [:input {:type "text" 
-              :value (:preco-cambio moeda)
-              :on-change #(swap! moedas assoc-in [chave :preco-cambio] (-> % .-target .-value))}]]))
+     [:label "Preço pago por " (:nome moeda) " = R$ " ]
+     (input-valor seq-moeda chave)]))
+
+(defn input-carteira [seq-moeda chave]
+  (let [moeda (get seq-moeda 1)
+        chave-moeda (get seq-moeda 0)]
+    [:div [:label "Dinheiro na carteira: "] (input-valor seq-moeda chave) [:label (:nome moeda) " = R$ " (calcula-reais moeda)]
+]))
 
 (defn calculadora-window []  
   [:div 
    [:div [:label "Preço de compra câmbio"]]
    (for [moeda @moedas]
-     [:div [input-preco-cambio moeda]])
+     [:div [input-preco-cambio moeda :preco-cambio]])
+   [:div [:label "Quanto tem na carteira"]]
+   (for [moeda @moedas]
+     [:div [input-carteira moeda :carteira]])
    [botao]
    (for [moeda @moedas]
      [:div [:label "DEBUG " (str moeda)]])])
