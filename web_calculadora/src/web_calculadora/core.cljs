@@ -5,14 +5,18 @@
 (enable-console-print!)
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 0 :carteira 1000} 
-                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 75}
-                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 35}}
+(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 0 :carteira 0 :reais 0} 
+                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 0 :reais 0}
+                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 0 :reais 0}}
 ))
 (def chaves [:peso :dolar :euro])
 
 (defn calcula-reais [moeda]
   (* (:carteira moeda) (:preco-cambio moeda)))
+
+(defn get-moedas []
+  (for [chave chaves]
+    (chave @moedas)))
 
 (defn botao []
   [:button {:on-click (fn [e] e)} 
@@ -20,17 +24,16 @@
 
 (defn input-valor [chave-moeda chave]
   (let [moeda (chave-moeda @moedas)]
-  [:input {:type "text" 
-           :value (chave moeda) 
-           :on-change #(swap! moedas assoc-in [chave-moeda chave] (-> % .-target .-value))}]))
+    [:input {:type "text" 
+             :value (chave moeda) 
+             :on-change #(do (swap! moedas assoc-in [chave-moeda chave] (-> % .-target .-value))
+                             (swap! moedas assoc-in [chave-moeda :reais] (calcula-reais (chave-moeda @moedas)))) } ] ))
 
 (defn input-preco-cambio [chave-moeda chave]
   (let [moeda (chave-moeda @moedas)]
     [:div
      [:label "Preço pago por " (:nome moeda) " = R$ " ]
-     (input-valor chave-moeda chave)
-
-]))
+     (input-valor chave-moeda chave)]))
 
 (defn input-preco-loja [chave-moeda chave]
   (let [moeda (chave-moeda @moedas)]
