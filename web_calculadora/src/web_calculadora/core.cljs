@@ -9,6 +9,7 @@
                        :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 75}
                        :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 35}}
 ))
+(def chaves [:peso :dolar :euro])
 
 (defn calcula-reais [moeda]
   (* (:carteira moeda) (:preco-cambio moeda)))
@@ -17,44 +18,42 @@
   [:button {:on-click (fn [e] e)} 
    (str "-->")])
 
-(defn input-valor [seq-moeda chave]
-  (let [moeda (get seq-moeda 1)
-        chave-moeda (get seq-moeda 0)]
+(defn input-valor [chave-moeda chave]
+  (let [moeda (chave-moeda @moedas)]
   [:input {:type "text" 
            :value (chave moeda) 
            :on-change #(swap! moedas assoc-in [chave-moeda chave] (-> % .-target .-value))}]))
 
-(defn input-preco-cambio [seq-moeda chave]
-  (let [moeda (get seq-moeda 1)
-        chave-moeda (get seq-moeda 0)]
+(defn input-preco-cambio [chave-moeda chave]
+  (let [moeda (chave-moeda @moedas)]
     [:div
      [:label "Preço pago por " (:nome moeda) " = R$ " ]
-     (input-valor seq-moeda chave)]))
+     (input-valor chave-moeda chave)
 
-(defn input-preco-loja [seq-moeda chave]
-  (let [moeda (get seq-moeda 1)
-        chave-moeda (get seq-moeda 0)]
+]))
+
+(defn input-preco-loja [chave-moeda chave]
+  (let [moeda (chave-moeda @moedas)]
     [:div
      [:label "Produto custa " (:nome moeda) " "]
-     (input-valor seq-moeda chave)]))
+     (input-valor chave-moeda chave)]))
 
-(defn input-carteira [seq-moeda chave]
-  (let [moeda (get seq-moeda 1)
-        chave-moeda (get seq-moeda 0)]
-    [:div [:label "Dinheiro na carteira: "] (input-valor seq-moeda chave) [:label (:nome moeda) " = R$ " (calcula-reais moeda)]
+(defn input-carteira [chave-moeda chave]
+  (let [moeda (chave-moeda @moedas)]
+    [:div [:label "Dinheiro na carteira: "] (input-valor chave-moeda chave) [:label (:nome moeda) " = R$ " (calcula-reais moeda)]
 ]))
 
 (defn calculadora-window []  
   [:div 
    [:div [:label "Preço de compra câmbio"]]
-   (for [moeda @moedas]
-     [:div [input-preco-cambio moeda :preco-cambio]])
+   (for [chave chaves]
+     [:div [input-preco-cambio chave :preco-cambio]])
    [:div [:label "Quanto tem na carteira"]]
-   (for [moeda @moedas]
-     [:div [input-carteira moeda :carteira]])
+   (for [chave chaves]
+     [:div [input-carteira chave :carteira]])
    [:div [:label "Quanto custa na loja"]]
-   (for [moeda @moedas]
-     [:div [input-preco-loja moeda :preco-loja]])
+   (for [chave chaves]
+     [:div [input-preco-loja chave :preco-loja]])
    [botao]
    (for [moeda @moedas]
      [:div [:label "DEBUG " (str moeda)]])])
