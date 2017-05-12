@@ -5,11 +5,14 @@
 (enable-console-print!)
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 0 :carteira 0 :reais 0} 
-                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 0 :reais 0}
-                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 0 :reais 0}}
+(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 0 :carteira 0 :reais-carteira 0} 
+                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 0 :reais-carteira 0}
+                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 0 :reais-carteira 0}
+                       :real {:nome "R$" :preco-cambio 1 :preco-loja 0 :carteira 0 :reais-carteira 0}
+
+}
 ))
-(def chaves [:peso :dolar :euro])
+(def chaves [:peso :dolar :euro :real])
 
 (defn calcula-reais [moeda]
   (* (:carteira moeda) (:preco-cambio moeda)))
@@ -18,16 +21,20 @@
   (for [chave chaves]
     (chave @moedas)))
 
-(defn botao []
-  [:button {:on-click (fn [e] e)} 
-   (str "-->")])
+(defn preco-em-reais [moeda]
+  (* (:preco-loja moeda) (:preco-cambio moeda)))
+
+(defn calcula-melhor []
+  (let [ms (get-moedas) 
+        ordenado (sort-by preco-em-reais ms)]
+    (filter #(and (> (preco-em-reais %) 0) (>= (:reais-carteira %) (preco-em-reais %))) ordenado)))
 
 (defn input-valor [chave-moeda chave]
   (let [moeda (chave-moeda @moedas)]
     [:input {:type "text" 
              :value (chave moeda) 
              :on-change #(do (swap! moedas assoc-in [chave-moeda chave] (-> % .-target .-value))
-                             (swap! moedas assoc-in [chave-moeda :reais] (calcula-reais (chave-moeda @moedas)))) } ] ))
+                             (swap! moedas assoc-in [chave-moeda :reais-carteira] (calcula-reais (chave-moeda @moedas)))) } ] ))
 
 (defn input-preco-cambio [chave-moeda chave]
   (let [moeda (chave-moeda @moedas)]
@@ -57,9 +64,9 @@
    [:div [:label "Quanto custa na loja"]]
    (for [chave chaves]
      [:div [input-preco-loja chave :preco-loja]])
-   [botao]
-   (for [moeda @moedas]
-     [:div [:label "DEBUG " (str moeda)]])])
+   [:div [:label "MELHOR " (str (calcula-melhor))]]
+
+])
 
 (r/render-component [calculadora-window]
                           (. js/document (getElementById "app")))
