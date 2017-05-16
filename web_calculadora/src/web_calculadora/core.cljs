@@ -14,6 +14,9 @@
 ))
 (def chaves [:peso :dolar :euro :real])
 
+(defn calcula-reais-preco-loja [moeda]
+  (* (:preco-loja moeda) (:preco-cambio moeda)))
+
 (defn calcula-reais [moeda]
   (* (:carteira moeda) (:preco-cambio moeda)))
 
@@ -64,8 +67,8 @@
    [:div [:label "Quanto custa na loja"]]
    (for [chave chaves]
      [:div [input-preco-loja chave :preco-loja]])
-   [:div [:label "MELHOR " (str (calcula-melhor))]]
-
+   (for [melhor (calcula-melhor)]
+     [:div [:label (str "Melhor pagar com "  (:nome melhor) " " (:preco-loja melhor) " = R$ " (calcula-reais-preco-loja melhor))]])
 ])
 
 (r/render-component [calculadora-window]
