@@ -79,3 +79,18 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 (defn on-js-reload []
   (println (str "@moedas = " @moedas)))
+
+
+
+; React Native (re-natal):
+(comment
+  (def text-input (r/adapt-react-class (.-TextInput ReactNative))))
+
+(comment 
+  (defn app-root []
+    (let [greeting (subscribe [:get-greeting])]
+      (fn []
+        [view 
+         [text-input {:style {:height 40 :border-width 2 :border-color "green" :margin-bottom 1 }} (str "R$ " )]
+         [text-input {:style {:height 40 :border-width 2 :border-color "green" :margin-bottom 1 }} (str "R$ " )]
+         ]))))
