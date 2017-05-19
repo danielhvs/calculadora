@@ -84,7 +84,8 @@
 
 ; React Native (re-natal):
 (comment
-  (def text-input (r/adapt-react-class (.-TextInput ReactNative))))
+  (def text-input (r/adapt-react-class (.-TextInput ReactNative)))
+)
 
 (comment 
   (defn app-root []
@@ -93,4 +94,6 @@
         [view 
          [text-input {:style {:height 40 :border-width 2 :border-color "green" :margin-bottom 1 }} (str "R$ " )]
          [text-input {:style {:height 40 :border-width 2 :border-color "green" :margin-bottom 1 }} (str "R$ " )]
-         ]))))
+         ])))
+
+)

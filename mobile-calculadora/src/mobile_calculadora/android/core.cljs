@@ -22,10 +22,21 @@
                        :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 5 :reais-carteira 0}
                        :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 0 :reais-carteira 0}
                        :real {:nome "R$" :preco-cambio 1 :preco-loja 0 :carteira 0 :reais-carteira 0}}))
-(def chaves [:peso])
-(def estilo {:style {:font-size 10 :height 20 :border-width 1 :border-color "green" :margin-bottom 1 }})
-(def estilo-input {:style {:font-size 10 :height 35 :border-width 1 :border-color "green" :margin-bottom 1 }})
-(def estilo-titulo {:style {:font-size 8 :height 15 :border-width 1 :border-color "red" :margin-bottom 1 :text-align "center" :text-align-vertical "center"}})
+(def chaves [:peso :dolar])
+
+(def styles {
+             :estilo-input {:font-size 10 :height 35 :border-width 1 :border-color "green" :margin-bottom 1 } 
+             :estilo-titulo {:font-size 12 :border-width 1 :text-align "center" :text-align-vertical "center"} 
+             :estilo-tudo {:flex 1} 
+             :borda-red {:border-color "red" :border-width 2} 
+             :borda-blue {:border-color "blue" :border-width 2} 
+             :borda-green {:border-color "green" :border-width 2} 
+             :estilo-lista {:flex 1 :align-items "center" :justify-content "flex-start"} 
+             :estilo-texto-input {:justify-content "center"}
+})
+
+(defn estilos [chaves]
+  {:style (apply merge (map styles chaves))})
 
 (defn calcula-reais-preco-loja [moeda]
   (* (:preco-loja moeda) (:preco-cambio moeda)))
@@ -48,28 +59,27 @@
 (defn input-carteira [chave-moeda chave]
   (let [moeda (chave-moeda @moedas)]
     [view 
-     [text estilo (str "Dinheiro na carteira: ")] 
-     [text-input estilo-input (str (chave moeda))]
-     [text estilo (str (:nome moeda) " = R$ " (calcula-reais moeda))]
+     [text (str "Dinheiro na carteira: ")] 
+     [text-input (str (chave moeda))]
+     [text (str (:nome moeda) " = R$ " (calcula-reais moeda))]
 ]))
 
 (defn input-preco-cambio [chave-moeda chave]
   (let [moeda (chave-moeda @moedas)]
-    [view
-     [text estilo (str "Preço pago por " (:nome moeda) " = R$ ") ]
-     [text-input estilo-input (str (chave moeda))]]))
+    [view 
+     [text (str "Preço pago por " (:nome moeda) " = R$ ") ]
+     [text-input (str (chave moeda))]]))
+
+(defn titulo [texto]
+  [text (estilos [:estilo-titulo :borda-blue]) texto])
 
 (defn app-root []
   (let [greeting (subscribe [:get-greeting])]
     (fn []
-      [view 
-       [view [text estilo-titulo "Preco de compra cambio" ]]
-       (for [chave chaves]
-         [input-preco-cambio chave :preco-cambio])
-       [view [text estilo-titulo "Quanto tem na carteira"]]
-       (for [chave chaves]
-         [input-carteira chave :carteira])
-       
+      [view (estilos [:estilo-tudo :borda-red])
+       [view (estilos [:estilo-lista :borda-green]) (titulo "Preco de cambio")]
+       [view (estilos [:estilo-lista :borda-green]) (titulo "Quanto tem na carteira")]
+       [view (estilos [:estilo-lista :borda-green]) (titulo "Quanto custa na loja?")]
        ])))
 
 (defn init []
