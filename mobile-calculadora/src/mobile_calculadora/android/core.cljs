@@ -22,21 +22,21 @@
                        :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 5 :reais-carteira 0}
                        :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 0 :reais-carteira 0}
                        :real {:nome "R$" :preco-cambio 1 :preco-loja 0 :carteira 0 :reais-carteira 0}}))
-(def chaves [:peso :dolar])
+(def chaves [:peso :dolar :euro])
 
-(def border-width 2)
+(def border-width 0)
 (def styles {
              :input {:font-size 10 :flex 1} 
-             :titulo {:font-size 12 :border-width 1 :text-align "center" :text-align-vertical "center"} 
-             :estilo-tudo {:flex 1} 
+             :titulo {:color "blue" :font-size 15 :text-align "center" :text-align-vertical "center"} 
+             :estilo-tudo {:flex 1}
              :borda-red {:border-color "red" :border-width border-width} 
              :borda-blue {:border-color "blue" :border-width border-width} 
              :borda-green {:border-color "green" :border-width border-width} 
-             :lista-titulo {:flex 1 :align-items "center" :justify-content "flex-start"} 
-             :lista-esquerda {:flex 10 :align-items "stretch" :justify-content "flex-start"} 
+             :view-titulo {:flex 1 :align-items "center" :justify-content "center"} 
+             :lista-esquerda {:flex 4 :align-items "stretch" :justify-content "flex-start"} 
              :fila {:flex 1 :flex-direction "row" :align-items "center" :justify-content "flex-start"} 
              :input-preco {:flex-direction "row" :align-items "center" :justify-content "space-around"}
-             :label-container {:flex-direction "row" :align-items "center" :justify-content "flex-end" :margin-vertical 2 :flex 1 }
+             :label-container {:flex-direction "row" :align-items "center" :justify-content "flex-end" :flex 1 }
              :label {:align-items "flex-start" :padding-top 2}
              :texto-pequeno {:font-size 10}
 })
@@ -77,11 +77,11 @@
      [text-input (str (chave moeda))]]))
 
 (defn titulo [texto]
-  [text (estilos [:titulo :borda-blue]) texto])
+  [text (estilos [:titulo]) texto])
 
 (defn input-preco [texto componente]
-  [view (estilos [:fila :borda-red])
-   [view (estilos [:label :borda-blue])
+  [view (estilos [:fila :borda-blue])
+   [view (estilos [:label :borda-green])
     [text (estilos [:texto-pequeno]) texto]]
    componente])
 
@@ -89,16 +89,16 @@
   (let [greeting (subscribe [:get-greeting])]
     (fn []
       [view (estilos [:estilo-tudo :borda-red])
-       [view (estilos [:lista-titulo :borda-green]) 
+       [view (estilos [:view-titulo :borda-green]) 
         (titulo "Preco de cambio")]
        [view (estilos [:lista-esquerda :borda-green])
-        (input-preco "R$->" [text-input (estilos [:input]) "oi"])
-        (input-preco "R$->" [text-input (estilos [:input]) "oi"])]
-      [view (estilos [:lista-titulo :borda-green]) 
-        (titulo "Preco de cambio")]
+        (for [chave chaves]
+          (input-preco (str "Comprei cada " (:nome (chave @moedas)) " por R$ " ) [text-input (estilos [:input]) (str (:preco-cambio (chave @moedas)))]))]
+       [view (estilos [:view-titulo :borda-green]) 
+        (titulo "Dinheiro na carteira")]
        [view (estilos [:lista-esquerda :borda-green])
-        (input-preco "R$->  " [text-input (estilos [:input]) "oi"])
-        (input-preco "R$->" [text-input (estilos [:input]) "oi"])]
+        (for [chave chaves]
+          (input-preco (str "" (:nome (chave @moedas)) ": " ) [text-input (estilos [:input]) (str (:carteira (chave @moedas)))]))]
        ])))
 
 (defn init []
