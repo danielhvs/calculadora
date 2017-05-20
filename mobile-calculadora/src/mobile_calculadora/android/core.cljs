@@ -24,15 +24,21 @@
                        :real {:nome "R$" :preco-cambio 1 :preco-loja 0 :carteira 0 :reais-carteira 0}}))
 (def chaves [:peso :dolar])
 
+(def border-width 2)
 (def styles {
-             :estilo-input {:font-size 10 :height 35 :border-width 1 :border-color "green" :margin-bottom 1 } 
-             :estilo-titulo {:font-size 12 :border-width 1 :text-align "center" :text-align-vertical "center"} 
+             :input {:font-size 10 :flex 1} 
+             :titulo {:font-size 12 :border-width 1 :text-align "center" :text-align-vertical "center"} 
              :estilo-tudo {:flex 1} 
-             :borda-red {:border-color "red" :border-width 2} 
-             :borda-blue {:border-color "blue" :border-width 2} 
-             :borda-green {:border-color "green" :border-width 2} 
-             :estilo-lista {:flex 1 :align-items "center" :justify-content "flex-start"} 
-             :estilo-texto-input {:justify-content "center"}
+             :borda-red {:border-color "red" :border-width border-width} 
+             :borda-blue {:border-color "blue" :border-width border-width} 
+             :borda-green {:border-color "green" :border-width border-width} 
+             :lista-titulo {:flex 1 :align-items "center" :justify-content "flex-start"} 
+             :lista-esquerda {:flex 10 :align-items "stretch" :justify-content "flex-start"} 
+             :fila {:flex 1 :flex-direction "row" :align-items "center" :justify-content "flex-start"} 
+             :input-preco {:flex-direction "row" :align-items "center" :justify-content "space-around"}
+             :label-container {:flex-direction "row" :align-items "center" :justify-content "flex-end" :margin-vertical 2 :flex 1 }
+             :label {:align-items "flex-start" :padding-top 2}
+             :texto-pequeno {:font-size 10}
 })
 
 (defn estilos [chaves]
@@ -71,15 +77,28 @@
      [text-input (str (chave moeda))]]))
 
 (defn titulo [texto]
-  [text (estilos [:estilo-titulo :borda-blue]) texto])
+  [text (estilos [:titulo :borda-blue]) texto])
+
+(defn input-preco [texto componente]
+  [view (estilos [:fila :borda-red])
+   [view (estilos [:label :borda-blue])
+    [text (estilos [:texto-pequeno]) texto]]
+   componente])
 
 (defn app-root []
   (let [greeting (subscribe [:get-greeting])]
     (fn []
       [view (estilos [:estilo-tudo :borda-red])
-       [view (estilos [:estilo-lista :borda-green]) (titulo "Preco de cambio")]
-       [view (estilos [:estilo-lista :borda-green]) (titulo "Quanto tem na carteira")]
-       [view (estilos [:estilo-lista :borda-green]) (titulo "Quanto custa na loja?")]
+       [view (estilos [:lista-titulo :borda-green]) 
+        (titulo "Preco de cambio")]
+       [view (estilos [:lista-esquerda :borda-green])
+        (input-preco "R$->" [text-input (estilos [:input]) "oi"])
+        (input-preco "R$->" [text-input (estilos [:input]) "oi"])]
+      [view (estilos [:lista-titulo :borda-green]) 
+        (titulo "Preco de cambio")]
+       [view (estilos [:lista-esquerda :borda-green])
+        (input-preco "R$->  " [text-input (estilos [:input]) "oi"])
+        (input-preco "R$->" [text-input (estilos [:input]) "oi"])]
        ])))
 
 (defn init []
