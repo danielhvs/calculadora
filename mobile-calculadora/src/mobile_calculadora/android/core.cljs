@@ -18,27 +18,27 @@
 (defn alert [title]
       (.alert (.-Alert ReactNative) title))
 
-(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 0 :carteira 10 :reais-carteira 0} 
-                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 0 :carteira 5 :reais-carteira 0}
-                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 0 :carteira 0 :reais-carteira 0}
-                       :real {:nome "R$" :preco-cambio 1 :preco-loja 0 :carteira 0 :reais-carteira 0}}))
+(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 2 :carteira 10 :reais-carteira 0} 
+                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 25 :carteira 5 :reais-carteira 0}
+                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 23 :carteira 0 :reais-carteira 0}
+                       :real {:nome "R$" :preco-cambio 1 :preco-loja 14 :carteira 0 :reais-carteira 0}}))
 (def chaves [:peso :dolar :euro])
 
 (def border-width 0)
 (def styles {
-             :input {:font-size 10 :flex 1} 
-             :titulo {:color "blue" :font-size 15 :text-align "center" :text-align-vertical "center"} 
+             :input {:font-size 8 :flex 1} 
+             :titulo {:color "blue" :font-size 10 :text-align "center" :text-align-vertical "center"} 
              :estilo-tudo {:flex 1}
              :borda-red {:border-color "red" :border-width border-width} 
              :borda-blue {:border-color "blue" :border-width border-width} 
              :borda-green {:border-color "green" :border-width border-width} 
              :view-titulo {:flex 1 :align-items "center" :justify-content "center"} 
-             :lista-esquerda {:flex 4 :align-items "stretch" :justify-content "flex-start"} 
+             :lista-esquerda {:flex 12 :align-items "stretch" :justify-content "flex-start"} 
              :fila {:flex 1 :flex-direction "row" :align-items "center" :justify-content "flex-start"} 
              :input-preco {:flex-direction "row" :align-items "center" :justify-content "space-around"}
              :label-container {:flex-direction "row" :align-items "center" :justify-content "flex-end" :flex 1 }
-             :label {:align-items "flex-start" :padding-top 2}
-             :texto-pequeno {:font-size 10}
+             :label {:align-items "flex-start"}
+             :texto-pequeno {:font-size 8}
 })
 
 (defn estilos [chaves]
@@ -99,6 +99,11 @@
        [view (estilos [:lista-esquerda :borda-green])
         (for [chave chaves]
           (input-preco (str "" (:nome (chave @moedas)) ": " ) [text-input (estilos [:input]) (str (:carteira (chave @moedas)))]))]
+       [view (estilos [:view-titulo :borda-green]) 
+        (titulo "Preco na loja")]
+       [view (estilos [:lista-esquerda :borda-green])
+        (for [chave chaves]
+          (input-preco (str "" (:nome (chave @moedas)) ": " ) [text-input (estilos [:input]) (str (:preco-loja (chave @moedas)))]))]
        ])))
 
 (defn init []
