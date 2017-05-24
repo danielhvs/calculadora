@@ -27,7 +27,7 @@
 
 (def border-width 0)
 (def styles {
-             :input {:font-size 16 :flex 1} 
+             :input {:font-size 16 :flex 1 :keyboard-type "phone-pad"} 
              :titulo {:color "blue" :font-size 16 :text-align "center" :text-align-vertical "center"} 
              :estilo-tudo {:flex 1}
              :borda-red {:border-color "red" :border-width border-width} 
@@ -78,11 +78,25 @@
 (defn titulo [texto]
   [text (estilos [:titulo]) texto])
 
+(defn update-reais-carteira! [chave]
+  (swap! moedas assoc-in [chave :reais-carteira] (calcula-reais (chave @moedas))))
+
+(defn update-estado! [chave-moeda chave dado]
+  (swap! moedas assoc-in [chave-moeda chave] dado))
+
 (defn input-preco [texto componente]
   [view (estilos [:fila :borda-blue])
    [view (estilos [:label :borda-green])
     [text (estilos [:texto-pequeno]) texto]]
    componente])
+
+
+(defn input-com-update [chave-moeda chave]
+  (assoc (estilos [:input]) 
+    :on-change-text #(do (update-estado! chave-moeda chave %)
+                         (update-reais-carteira! chave-moeda)) 
+    :value (str (chave (chave-moeda @moedas)))))
+
 
 (defn app-root []
   (let [greeting (subscribe [:get-greeting])]
@@ -93,25 +107,28 @@
          (titulo "Preco de cambio")]
         [view (estilos [:lista-esquerda :borda-green])
          (for [chave chaves]
-           (input-preco (str "Comprei cada " (:nome (chave @moedas)) " por R$ " ) [text-input (estilos [:input]) (str (:preco-cambio (chave @moedas)))]))]]
+           (input-preco (str "Comprei cada " (:nome (chave @moedas)) " por R$ " ) 
+                        [text-input (input-com-update chave :preco-cambio)]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-blue]) 
          (titulo "Dinheiro na carteira")]
         [view (estilos [:lista-esquerda :borda-green])
          (for [chave chaves]
-           (input-preco (str (:nome (chave @moedas)) " " ) [text-input (estilos [:input]) (str (:carteira (chave @moedas)))]))]]
+           (input-preco (str (:nome (chave @moedas)) " " ) 
+                        [text-input (input-com-update chave :carteira)]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
          (titulo "Preco na loja")]
         [view (estilos [:lista-esquerda :borda-green])
          (for [chave chaves]
-           (input-preco (str (:nome (chave @moedas)) " " ) [text-input (estilos [:input]) (str (:preco-loja (chave @moedas)))]))]]
+           (input-preco (str (:nome (chave @moedas)) " " ) 
+                        [text-input (input-com-update chave :preco-loja)]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
          (titulo "Melhor pagar com")]
         [view (estilos [:lista-esquerda :borda-green])
          (for [melhor (calcula-melhor)]
-           (input-preco (str (:nome melhor) " " (:preco-loja melhor) ) [text "" ]))]]      
+           (input-preco (str (:nome melhor) " " (:preco-loja melhor) ) [text (str " = R$ " (preco-em-reais melhor)) ]))]]
        ])))
 
 (defn init []
