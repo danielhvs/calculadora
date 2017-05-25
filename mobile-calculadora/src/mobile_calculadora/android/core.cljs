@@ -3,6 +3,10 @@
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
             [mobile-calculadora.events]
             [mobile-calculadora.subs]))
+(def uniqkey (atom 0))
+(defn gen-key []
+  (let [res (swap! uniqkey inc)]
+    res))
 
 (def ReactNative (js/require "react-native"))
 
@@ -27,7 +31,7 @@
 
 (def border-width 0)
 (def styles {
-             :input {:font-size 16 :flex 1 :keyboard-type "phone-pad"} 
+             :input {:font-size 16 :flex 1 :keyboard-type "numeric"} 
              :titulo {:color "blue" :font-size 16 :text-align "center" :text-align-vertical "center"} 
              :estilo-tudo {:flex 1}
              :borda-red {:border-color "red" :border-width border-width} 
@@ -69,12 +73,6 @@
      [text (str (:nome moeda) " = R$ " (calcula-reais moeda))]
 ]))
 
-(defn input-preco-cambio [chave-moeda chave]
-  (let [moeda (chave-moeda @moedas)]
-    [view 
-     [text (str "Preço pago por " (:nome moeda) " = R$ ") ]
-     [text-input (str (chave moeda))]]))
-
 (defn titulo [texto]
   [text (estilos [:titulo]) texto])
 
@@ -84,7 +82,7 @@
 (defn update-estado! [chave-moeda chave dado]
   (swap! moedas assoc-in [chave-moeda chave] dado))
 
-(defn input-preco [texto componente]
+(defn input-preco [texto componente] 
   [view (estilos [:fila :borda-blue])
    [view (estilos [:label :borda-green])
     [text (estilos [:texto-pequeno]) texto]]
@@ -93,8 +91,8 @@
 
 (defn input-com-update [chave-moeda chave]
   (assoc (estilos [:input]) 
-    :on-change-text #(do (update-estado! chave-moeda chave %)
-                         (update-reais-carteira! chave-moeda)) 
+    ;:on-end-editing #(update-reais-carteira! chave-moeda) 
+    :on-change-text #(update-estado! chave-moeda chave %)
     :value (str (chave (chave-moeda @moedas)))))
 
 
@@ -106,29 +104,33 @@
         [view (estilos [:view-titulo :borda-green]) 
          (titulo "Preco de cambio")]
         [view (estilos [:lista-esquerda :borda-green])
-         (for [chave chaves]
-           (input-preco (str "Comprei cada " (:nome (chave @moedas)) " por R$ " ) 
-                        [text-input (input-com-update chave :preco-cambio)]))]]
+         (doall
+          (for [chave chaves]
+            [input-preco (str "Comprei cada " (:nome (chave @moedas)) " por R$ " ) 
+             [text-input (input-com-update chave :preco-cambio)]]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-blue]) 
          (titulo "Dinheiro na carteira")]
         [view (estilos [:lista-esquerda :borda-green])
-         (for [chave chaves]
-           (input-preco (str (:nome (chave @moedas)) " " ) 
-                        [text-input (input-com-update chave :carteira)]))]]
+         (doall
+          (for [chave chaves]
+            [input-preco (str (:nome (chave @moedas)) " " ) 
+             [text-input (input-com-update chave :carteira)]]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
          (titulo "Preco na loja")]
         [view (estilos [:lista-esquerda :borda-green])
-         (for [chave chaves]
-           (input-preco (str (:nome (chave @moedas)) " " ) 
-                        [text-input (input-com-update chave :preco-loja)]))]]
+         (doall
+          (for [chave chaves]
+            [input-preco (str (:nome (chave @moedas)) " " ) 
+             [text-input (input-com-update chave :preco-loja)]]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
-         (titulo "Melhor pagar com")]
+         (titulo "Meelhor pagar com")]
         [view (estilos [:lista-esquerda :borda-green])
-         (for [melhor (calcula-melhor)]
-           (input-preco (str (:nome melhor) " " (:preco-loja melhor) ) [text (str " = R$ " (preco-em-reais melhor)) ]))]]
+         (doall
+          (for [melhor (calcula-melhor)]
+            [input-preco (str (:nome melhor) " " (:preco-loja melhor) ) [text (str " = R$ " (preco-em-reais melhor)) ]]))]]
        ])))
 
 (defn init []
