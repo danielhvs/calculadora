@@ -28,7 +28,7 @@
                        :real {:nome "R$" :preco-cambio 1 :preco-loja 14 :carteira 3 :reais-carteira 3}}))
 (def chaves [:peso :dolar :euro])
 
-(def border-width 0)
+(def border-width 1)
 (def styles {
              :input {:font-size 16 :flex 1 :keyboard-type "numeric"} 
              :titulo {:color "blue" :font-size 16 :text-align "center" :text-align-vertical "center"} 
@@ -67,11 +67,10 @@
 (defn titulo [texto]
   [text (estilos [:titulo]) texto])
 
-(defn update-reais-carteira! [chave]
-  (swap! moedas assoc-in [chave :reais-carteira] (calcula-reais (chave @moedas))))
-
 (defn update-estado! [chave-moeda chave dado]
-  (swap! moedas assoc-in [chave-moeda chave] dado))
+  (do
+    (swap! moedas assoc-in [chave-moeda chave] dado)
+    (swap! moedas assoc-in [chave-moeda :reais-carteira] (calcula-reais (chave-moeda @moedas)))))
 
 (defn input-preco [texto componente]
   [view (estilos [:fila :borda-blue ])
@@ -79,13 +78,11 @@
     [text (estilos [:texto-pequeno]) texto]]
    componente])
 
-
-(defn input-com-update [chave-moeda chave]
-  (assoc (estilos [:input]) 
-    ;:on-end-editing #(update-reais-carteira! chave-moeda) 
-    :on-change-text #(update-estado! chave-moeda chave %)
-    :value (str (chave (chave-moeda @moedas)))))
-
+(defn entrada [valor chave-moeda chave]
+  [text-input (assoc (estilos [:input]) 
+                :on-end-editing #(update-estado! chave-moeda chave @valor) 
+                :on-change-text #(reset! valor %)
+                :value (str @valor))])
 
 (defn app-root []
   (let [greeting (subscribe [:get-greeting])]
@@ -97,8 +94,8 @@
         [view (estilos [:lista-esquerda :borda-green])
          (doall
           (for [chave chaves] ^{:key (gen-key)}
-            [input-preco (str "Comprei cada" (:nome (chave @moedas)) " por R$ " ) 
-             [text-input (input-com-update chave :preco-cambio)]]))]]
+            [input-preco (str "1 " (:nome (chave @moedas)) " = R$ " ) 
+             [entrada (atom (:preco-cambio (chave @moedas))) chave :preco-cambio]]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-blue]) 
          (titulo "Dinheiro na carteira")]
@@ -106,7 +103,7 @@
          (doall
           (for [chave chaves] ^{:key (gen-key)}
             [input-preco (str (:nome (chave @moedas)) " " ) 
-             [text-input (input-com-update chave :carteira)]]))]]
+             [entrada (atom (:carteira (chave @moedas))) chave :carteira]]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
          (titulo "Preco na loja")]
@@ -114,7 +111,7 @@
          (doall
           (for [chave chaves] ^{:key (gen-key)}
             [input-preco (str (:nome (chave @moedas)) " " ) 
-             [text-input (input-com-update chave :preco-loja)]]))]]
+             [entrada (atom (:preco-loja (chave @moedas))) chave :preco-loja]]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
          (titulo "Meelhor pagar com")]
