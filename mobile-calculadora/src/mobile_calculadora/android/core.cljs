@@ -31,16 +31,23 @@
 (def border-width 1)
 (def styles {
              :input {:font-size 16 :flex 1 :keyboard-type "numeric"} 
-             :titulo {:color "blue" :font-size 16 :text-align "center" :text-align-vertical "center"} 
+             :titulo {:color "blue" :font-size 24 :text-align "center" :text-align-vertical "center"} 
              :estilo-tudo {:flex 1}
              :borda-red {:border-color "red" :border-width border-width} 
              :borda-blue {:border-color "blue" :border-width border-width} 
              :borda-green {:border-color "green" :border-width border-width} 
-             :view-titulo {:flex 3 :align-items "center" :justify-content "center"} 
-             :lista-esquerda {:flex 1 :justify-content "flex-start"} 
+             :view-titulo {:flex 1 :align-items "center" :justify-content "center"} 
+             :lista-esquerda {:flex 5 :align-items "center" :justify-content "flex-start"} 
              :fila {:flex 1 :flex-direction "row"} 
-             :label {:align-items "flex-end" :justify-content "space-around"}
+             ;; :label {:align-items "flex-end" :justify-content "space-around"}
+             :label {
+ :width 110 :align-items "flex-end" :margin-right 5
+}
              :texto-pequeno {:font-size 12}
+             :label-container {:flexDirection "row" :margin-vertical 2}
+             :default {
+ :height 24 :border-width 0.0 :border-color "#0f0f0f" :flex 1 :font-size 14 :padding 4
+}
 })
 
 (defn estilos [chaves]
@@ -67,14 +74,14 @@
 (defn update-estado! [chave-moeda chave dado]
   (swap! moedas assoc-in [chave-moeda chave] dado))
 
-(defn input-preco [texto componente]
-  [view (estilos [:fila :borda-blue])
-   [view (estilos [:label :borda-green])
-    [text (estilos [:texto-pequeno]) texto]]
+(defn with-label [texto componente]
+  [view (estilos [:label-container])
+   [view (estilos [:label])
+    [text texto]]
    componente])
 
 (defn entrada [valor chave-moeda chave]
-  [text-input (assoc (estilos [:input]) 
+  [text-input (assoc (estilos [:default]) 
                 :on-end-editing #(update-estado! chave-moeda chave @valor) 
                 :on-change-text #(reset! valor %)
                 :value (str @valor))])
@@ -82,31 +89,34 @@
 (defn app-root []
   (let [greeting (subscribe [:get-greeting])]
     (fn []
-      [scroll-view (estilos [:estilo-tudo :borda-red])
-       [view (estilos [:borda-red])
-        [view (estilos [:view-titulo :borda-green]) 
-         (titulo "Preco de cambio")]
-        [view (estilos [:lista-esquerda :borda-green])
+      [scroll-view 
+       [view (estilos [:view-titulo])
+        [view {:style {:flex 2}}
+         [text (estilos [:titulo]) "Preco de cambio"]]
+        [view (estilos [:lista-esquerda])
          (doall
           (for [chave chaves] ^{:key (gen-key)}
-            [input-preco (str "1 " (:nome (chave @moedas)) " = R$ " ) 
-             [entrada (atom (:preco-cambio (chave @moedas))) chave :preco-cambio]]))]]
-       [view (estilos [:borda-red])
-        [view (estilos [:view-titulo :borda-green]) 
-         (titulo "Preco na loja")]
-        [view (estilos [:lista-esquerda :borda-green])
+               [with-label (str "1 " (:nome (chave @moedas)) " = R$ " ) 
+                [entrada (atom (:preco-cambio (chave @moedas))) chave :preco-cambio]]))]]
+       [view (estilos [:view-titulo])
+        [view {:style {:flex 2}}
+         [text (estilos [:titulo]) "Preco do produto"]]
+        [view (estilos [:lista-esquerda])
          (doall
           (for [chave chaves] ^{:key (gen-key)}
-            [input-preco (str (:nome (chave @moedas)) " " ) 
-             [entrada (atom (:preco-loja (chave @moedas))) chave :preco-loja]]))]]
-       [view (estilos [:borda-red])
-        [view (estilos [:view-titulo :borda-green]) 
-         (titulo "Melhor pagar com")]
-        [view (estilos [:lista-esquerda :borda-green])
+               [with-label (str (:nome (chave @moedas)) "" ) 
+                [entrada (atom (:preco-loja (chave @moedas))) chave :preco-loja]]))]]
+       [view (estilos [:view-titulo])
+        [view {:style {:flex 2}}
+         [text (estilos [:titulo]) "Melhor moeda"]]
+        [view (estilos [:lista-esquerda])
          (doall
           (for [melhor (calcula-melhor)] ^{:key (gen-key)}
-            [input-preco (str (:nome melhor) " " (:preco-loja melhor) ) [text (str " = R$ " (preco-em-reais melhor)) ]]))]]
-       ])))
+               [with-label (str (:nome melhor) " " (:preco-loja melhor) " = " ) 
+                [text (str "R$ " (preco-em-reais melhor))]]))]]
+
+       ]
+)))
 
 (defn init []
       (dispatch-sync [:initialize-db])
