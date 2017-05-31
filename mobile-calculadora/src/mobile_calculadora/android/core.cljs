@@ -22,10 +22,10 @@
 (defn alert [title]
       (.alert (.-Alert ReactNative) title))
 
-(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 2 :carteira 10 :reais-carteira 3.30} 
-                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 25 :carteira 5 :reais-carteira 17}
-                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 3 :carteira 6 :reais-carteira 16.60}
-                       :real {:nome "R$" :preco-cambio 1 :preco-loja 14 :carteira 3 :reais-carteira 3}}))
+(defonce moedas (atom {:peso {:nome "PES" :preco-cambio 0.33 :preco-loja 2} 
+                       :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 25}
+                       :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 3}
+                       :real {:nome "R$" :preco-cambio 1 :preco-loja 14}}))
 (def chaves [:peso :dolar :euro])
 
 (def border-width 1)
@@ -49,9 +49,6 @@
 (defn calcula-reais-preco-loja [moeda]
   (* (:preco-loja moeda) (:preco-cambio moeda)))
 
-(defn calcula-reais [moeda]
-  (* (:carteira moeda) (:preco-cambio moeda)))
-
 (defn get-moedas []
   (for [chave chaves]
     (chave @moedas)))
@@ -62,18 +59,16 @@
 (defn calcula-melhor []
   (let [ms (get-moedas) 
         ordenado (sort-by preco-em-reais ms)]
-    (filter #(and (> (preco-em-reais %) 0) (>= (:reais-carteira %) (preco-em-reais %))) ordenado)))
+    (filter #(> (preco-em-reais %) 0) ordenado)))
 
 (defn titulo [texto]
   [text (estilos [:titulo]) texto])
 
 (defn update-estado! [chave-moeda chave dado]
-  (do
-    (swap! moedas assoc-in [chave-moeda chave] dado)
-    (swap! moedas assoc-in [chave-moeda :reais-carteira] (calcula-reais (chave-moeda @moedas)))))
+  (swap! moedas assoc-in [chave-moeda chave] dado))
 
 (defn input-preco [texto componente]
-  [view (estilos [:fila :borda-blue ])
+  [view (estilos [:fila :borda-blue])
    [view (estilos [:label :borda-green])
     [text (estilos [:texto-pequeno]) texto]]
    componente])
@@ -97,14 +92,6 @@
             [input-preco (str "1 " (:nome (chave @moedas)) " = R$ " ) 
              [entrada (atom (:preco-cambio (chave @moedas))) chave :preco-cambio]]))]]
        [view (estilos [:borda-red])
-        [view (estilos [:view-titulo :borda-blue]) 
-         (titulo "Dinheiro na carteira")]
-        [view (estilos [:lista-esquerda :borda-green])
-         (doall
-          (for [chave chaves] ^{:key (gen-key)}
-            [input-preco (str (:nome (chave @moedas)) " " ) 
-             [entrada (atom (:carteira (chave @moedas))) chave :carteira]]))]]
-       [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
          (titulo "Preco na loja")]
         [view (estilos [:lista-esquerda :borda-green])
@@ -114,7 +101,7 @@
              [entrada (atom (:preco-loja (chave @moedas))) chave :preco-loja]]))]]
        [view (estilos [:borda-red])
         [view (estilos [:view-titulo :borda-green]) 
-         (titulo "Meelhor pagar com")]
+         (titulo "Melhor pagar com")]
         [view (estilos [:lista-esquerda :borda-green])
          (doall
           (for [melhor (calcula-melhor)] ^{:key (gen-key)}
