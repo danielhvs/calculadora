@@ -1,6 +1,7 @@
 (ns mobile-calculadora.android.core
   (:require [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
+            [cljs.pprint :as pprint]
             [mobile-calculadora.events]
             [mobile-calculadora.subs]))
 
@@ -26,7 +27,7 @@
                        :dolar {:nome "USD" :preco-cambio 3.40 :preco-loja 25}
                        :euro {:nome "EUR" :preco-cambio 4.10 :preco-loja 3}
                        :real {:nome "R$" :preco-cambio 1 :preco-loja 14}}))
-(def chaves [:peso :dolar :euro])
+(def chaves [:peso :dolar :euro :real])
 
 (def border-width 1)
 (def styles {
@@ -39,7 +40,6 @@
              :view-titulo {:flex 1 :align-items "center" :justify-content "center"} 
              :lista-esquerda {:flex 5 :align-items "center" :justify-content "flex-start"} 
              :fila {:flex 1 :flex-direction "row"} 
-             ;; :label {:align-items "flex-end" :justify-content "space-around"}
              :label {
  :width 110 :align-items "flex-end" :margin-right 5
 }
@@ -74,6 +74,9 @@
 (defn update-estado! [chave-moeda chave dado]
   (swap! moedas assoc-in [chave-moeda chave] dado))
 
+(defn formata [numero]
+  (pprint/cl-format nil "~,2f" numero))
+
 (defn with-label [texto componente]
   [view (estilos [:label-container])
    [view (estilos [:label])
@@ -92,31 +95,28 @@
       [scroll-view 
        [view (estilos [:view-titulo])
         [view {:style {:flex 2}}
-         [text (estilos [:titulo]) "Preco de cambio"]]
+         [text (estilos [:titulo]) "Preço de câmbio"]]
         [view (estilos [:lista-esquerda])
          (doall
           (for [chave chaves] ^{:key (gen-key)}
                [with-label (str "1 " (:nome (chave @moedas)) " = R$ " ) 
-                [entrada (atom (:preco-cambio (chave @moedas))) chave :preco-cambio]]))]]
+                [entrada (atom (formata (:preco-cambio (chave @moedas)))) chave :preco-cambio]]))]]
        [view (estilos [:view-titulo])
         [view {:style {:flex 2}}
-         [text (estilos [:titulo]) "Preco do produto"]]
+         [text (estilos [:titulo]) "Preço do produto"]]
         [view (estilos [:lista-esquerda])
          (doall
           (for [chave chaves] ^{:key (gen-key)}
                [with-label (str (:nome (chave @moedas)) "" ) 
-                [entrada (atom (:preco-loja (chave @moedas))) chave :preco-loja]]))]]
+                [entrada (atom (formata (:preco-loja (chave @moedas)))) chave :preco-loja]]))]]
        [view (estilos [:view-titulo])
         [view {:style {:flex 2}}
-         [text (estilos [:titulo]) "Melhor moeda"]]
+         [text (estilos [:titulo]) "Melhor pagar com"]]
         [view (estilos [:lista-esquerda])
          (doall
           (for [melhor (calcula-melhor)] ^{:key (gen-key)}
-               [with-label (str (:nome melhor) " " (:preco-loja melhor) " = " ) 
-                [text (str "R$ " (preco-em-reais melhor))]]))]]
-
-       ]
-)))
+               [with-label (str (:nome melhor) " " (formata (:preco-loja melhor)) " = " ) 
+                [text (str "R$ " (formata (preco-em-reais melhor)))]]))]]])))
 
 (defn init []
       (dispatch-sync [:initialize-db])
