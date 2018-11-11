@@ -50,23 +50,27 @@
 )
 
 (defn calculadora-window []  
-  [:div 
-   [:h2 "Preço de compra câmbio"]
-   (let [chaves (rf/subscribe [:chaves])
-         moedas (rf/subscribe [:moedas])]
-     (for [chave @chaves]
-       [texto-input (str "Preco pago por " (:nome (chave @moedas)) " = R$ ") chave moedas :preco-cambio])) 
-   [:h2 "Quanto custa na loja"]
-   (let [chaves (rf/subscribe [:chaves])
-         moedas (rf/subscribe [:moedas])]
-     (for [chave @chaves]
-       [texto-input (str "Produto custa " (:nome (chave @moedas)) " ") chave moedas :preco-loja]))
-   (let [moedas (rf/subscribe [:moedas])
-         chaves (rf/subscribe [:chaves])] 
-     (for [melhor (calcula-melhor @chaves @moedas)]
-       [:div
-        [:label (str "Melhor pagar com "  (:nome melhor) " " (:preco-loja melhor) " = R$ " (calcula-reais-preco-loja melhor))]]))
-   #_[:div (str @(rf/subscribe [:debug]))]
+  [:div.titulo 
+   [:h1.titulo "Calculadora de compras"]
+   [:h2.subtitulo "Preço de compra câmbio"]
+   [:div.secao
+    (let [chaves (rf/subscribe [:chaves])
+          moedas (rf/subscribe [:moedas])]
+      (for [chave @chaves]
+        [texto-input (str "Preco pago por " (:nome (chave @moedas)) " = R$ ") chave moedas :preco-cambio]))] 
+   [:h2.subtitulo "Quanto custa na loja"]
+   [:div.secao
+    (let [chaves (rf/subscribe [:chaves])
+          moedas (rf/subscribe [:moedas])]
+      (for [chave @chaves]
+        [texto-input (str "Produto custa " (:nome (chave @moedas)) " ") chave moedas :preco-loja]))]
+   [:h2.resultado
+    (let [moedas (rf/subscribe [:moedas])
+          chaves (rf/subscribe [:chaves])] 
+      (for [melhor (calcula-melhor @chaves @moedas)]
+        [:div#melhor
+         [:label#melhor (str "Melhor pagar com "  (:nome melhor) " " (:preco-loja melhor) " = R$ " (calcula-reais-preco-loja melhor))]]))]
+   #_[:footer.debug (str @(rf/subscribe [:debug]))]
    ])
 
 ;; init
